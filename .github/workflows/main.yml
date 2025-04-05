@@ -26,7 +26,6 @@ jobs:
         key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-buildx-
-
     - name: Build Docker image
       run: docker build -t test-cars . --build-arg BUILDKIT_INLINE_CACHE=1
 
@@ -43,7 +42,7 @@ jobs:
 
     - name: Run API tests
       run: |
-        docker run --name test-cars-api test-cars bash -c "pytest -s -v tests/test_app.py > tests/results/api_results.txt"
+        docker run --name test-cars-api -v $(pwd)/tests/results:/tests/results test-cars bash -c "pytest -s -v tests/test_app.py > /tests/results/api_results.txt"
       
     - name: Check if API test results exist
       run: |
@@ -53,7 +52,6 @@ jobs:
           echo "API test results are missing!"
           exit 1
         fi
-
     - name: Upload API test results
       uses: actions/upload-artifact@v2 
       with:
@@ -73,7 +71,7 @@ jobs:
 
     - name: Run UI tests
       run: |
-        docker run --name test-cars-ui test-cars bash -c "pytest -s -v tests/test_ui.py > tests/results/ui_results.txt"
+        docker run --name test-cars-ui -v $(pwd)/tests/results:/tests/results test-cars bash -c "pytest -s -v tests/test_ui.py > /tests/results/ui_results.txt"
       
     - name: Check if UI test results exist
       run: |
@@ -83,9 +81,8 @@ jobs:
           echo "UI test results are missing!"
           exit 1
         fi
-
     - name: Upload UI test results
       uses: actions/upload-artifact@v2  
       with:
         name: ui-results
-        path: tests/results/ui_results.txt 
+        path: tests/results/ui_results.txt
