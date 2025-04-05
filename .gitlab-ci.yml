@@ -28,6 +28,7 @@ TestApi:
   stage: TestApi
   script:
     - docker build -t test-cars .
+    - mkdir -p tests/results  
     - docker run --rm --name test-cars-api test-cars bash -c "./run_api_tests.sh"
   artifacts:
     paths:
@@ -38,7 +39,8 @@ TestApi:
 TestUi:
   stage: TestUi
   script:
-    - docker build -t test-cars .
+    - docker build -t test-cars . 
+    - mkdir -p tests/results  
     - docker run --rm --name test-cars-ui test-cars bash -c "./run_ui_tests.sh"
   artifacts:
     paths:
