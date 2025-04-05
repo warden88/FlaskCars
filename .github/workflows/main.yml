@@ -27,7 +27,6 @@ jobs:
         key: ${{ runner.os }}-buildx-${{ github.sha }}
         restore-keys: |
           ${{ runner.os }}-buildx-
-
     - name: Build Docker image
       run: docker build -t test-cars . --build-arg BUILDKIT_INLINE_CACHE=1
 
@@ -39,15 +38,18 @@ jobs:
     - name: Check out the code
       uses: actions/checkout@v2
 
+    - name: Create results directory
+      run: mkdir -p tests/results 
+
     - name: Run API tests
       run: |
         docker run --name test-cars-api test-cars bash -c "pytest -s -v tests/test_app.py > tests/results/api_results.txt"
       
     - name: Upload API test results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: api-results
-        path: tests/results/api_results.txt
+        path: tests/results/api_results.txt 
 
   TestUi:
     runs-on: ubuntu-latest
@@ -57,12 +59,16 @@ jobs:
     - name: Check out the code
       uses: actions/checkout@v2
 
+    - name: Create results directory
+      run: mkdir -p tests/results 
+
     - name: Run UI tests
       run: |
         docker run --name test-cars-ui test-cars bash -c "pytest -s -v tests/test_ui.py > tests/results/ui_results.txt"
-
+      
     - name: Upload UI test results
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v3
       with:
         name: ui-results
-        path: tests/results/ui_results.txt
+        path: tests/results/ui_results.txt  
+
