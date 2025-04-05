@@ -47,20 +47,12 @@ jobs:
       - name: Check out the code
         uses: actions/checkout@v4
 
-      - name: Download Docker image
-        uses: actions/download-artifact@v4
-        with:
-          name: test-cars-image
-
-      - name: Load Docker image
-        run: docker load < test-cars.tar
-
       - name: Create results directory
         run: mkdir -p tests/results
 
       - name: Run API tests
         run: |
-          docker run --rm -v ${{ github.workspace }}/tests/results:/tests/results test-cars bash -c "pytest -s -v tests/test_app_api.py > /tests/results/api_results.txt"
+          docker run --rm -v ${{ github.workspace }}/tests/results:/tests/results test-cars bash -c "ls -la /tests && pytest -v --maxfail=1 tests/test_app_api.py > /tests/results/api_results.txt"
 
       - name: Check if API test results exist
         run: |
@@ -76,6 +68,7 @@ jobs:
         with:
           name: api-results
           path: tests/results/api_results.txt
+
 
   TestUi:
     runs-on: ubuntu-latest
