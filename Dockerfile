@@ -1,5 +1,6 @@
 # Используем официальный образ Python
-FROM mcr.microsoft.com/playwright/python:v1.43.1-jammy
+FROM mcr.microsoft.com/playwright/python:latest
+
 
 # Установка зависимостей
 WORKDIR /app
