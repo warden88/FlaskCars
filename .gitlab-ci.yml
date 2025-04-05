@@ -13,7 +13,7 @@ variables:
 
 
 TestApi:
-  stage: test_api
+  stage: TestApi
   script:
     - docker build -t test-cars . 
     - docker run --name test-cars-api test-cars bash -c "pytest -s -v tests/test_app.py > tests/results/api_results.txt"  # Запускаем API тесты и сохраняем в файл
@@ -25,14 +25,14 @@ TestApi:
 
 
 TestUi:
-  stage: test_ui
+  stage: TestUi
   script:
     - docker build -t test-cars . 
-    - docker run --name test-cars-ui test-cars bash -c "pytest -s -v tests/test_ui.py > tests/results/ui_results.txt"  # Запускаем UI тесты и сохраняем в файл
+    - docker run --name test-cars-ui test-cars bash -c "mkdir -p tests/results && pytest -s -v tests/test_ui.py > tests/results/ui_results.txt"
   artifacts:
     paths:
       - tests/results/ui_results.txt 
     expire_in: 8 hours  
   when: manual  
   needs:
-    - job: test_api  
+    - job: TestApi  
