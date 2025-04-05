@@ -7,7 +7,7 @@ python app.py &
 sleep 3
 
 # Запускаем API тесты
-pytest -s -v tests/test_app.py
+pytest -s -v tests/test_app_api.py
 
 # Запускаем UI тесты
-pytest -s -v tests/test_ui.py
+pytest -s -v tests/test_list_cars_ui.py
