@@ -29,7 +29,7 @@ def delete_car(car_id):
     global cars
     car = next((car for car in cars if car["id"] == car_id), None)
     if car is None:
-        return jsonify({"error": "Car not found"}), 404
+        return jsonify({"error": "Car not found"}), 400
     cars = [car for car in cars if car["id"] != car_id]
     return jsonify({"message": "Car deleted"}), 200
 
