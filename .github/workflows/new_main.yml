@@ -1,0 +1,154 @@
+name: Test Cars CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build_image:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Cache Docker layers
+        uses: actions/cache@v4
+        with:
+          path: /tmp/.buildx-cache
+          key: ${{ runner.os }}-buildx-${{ github.sha }}
+          restore-keys: |
+            ${{ runner.os }}-buildx-
+
+      - name: Build Docker image
+        run: docker build -t test-cars .
+
+      - name: Save Docker image to tar
+        run: docker save test-cars > test-cars.tar
+
+      - name: Upload Docker image
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-cars-image
+          path: test-cars.tar
+
+  test_api:
+    runs-on: ubuntu-latest
+    needs: build_image
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Create results directory
+        run: mkdir -p tests/results
+
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: test-cars-image
+
+      - name: Load Docker image
+        run: docker load < test-cars.tar
+
+      
+      - name: Ensure results directory exists on the host
+        run: |
+          mkdir -p ${{ github.workspace }}/tests/results
+
+      - name: Run API tests
+        run: docker run --rm -v ${{ github.workspace }}/tests/results:/tests/results test-cars bash -c "./run_api_tests.sh"
+
+      - name: Upload API test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: api-results
+          path: tests/results/api_results.txt
+
+  test_ui:
+    runs-on: ubuntu-latest
+    needs: test_api
+
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v4
+
+      - name: Create results directory
+        run: mkdir -p tests/results
+
+      - name: Download Docker image
+        uses: actions/download-artifact@v4
+        with:
+          name: test-cars-image
+
+      - name: Load Docker image
+        run: docker load < test-cars.tar
+
+     
+      - name: Ensure results directory exists on the host
+        run: |
+          mkdir -p ${{ github.workspace }}/tests/results
+
+      - name: Run UI tests
+        run: docker run --rm -v ${{ github.workspace }}/tests/results:/tests/results test-cars bash -c "./run_ui_tests.sh"
+
+      - name: Upload UI test results
+        uses: actions/upload-artifact@v4
+        with:
+          name: ui-results
+          path: tests/results/ui_results.txt
+а вот гитлаб си файл так почему результаты не сохраняются 
+image: docker:latest
+
+services:
+  - docker:dind
+
+stages:
+  - BuildImage
+  - TestApi
+  - TestUi
+
+variables:
+  DOCKER_DRIVER: overlay2
+
+before_script:
+  - docker info
+
+BuildImage:
+  stage: BuildImage
+  script:
+    - docker build -t test-cars .
+  artifacts:
+    name: "test-cars-image"
+    paths:
+      - test-cars.tar
+    expire_in: 8 hours
+
+TestApi:
+  stage: TestApi
+  script:
+    - docker build -t test-cars .
+    - docker run --rm --name test-cars-api test-cars bash -c "./run_api_tests.sh"
+  artifacts:
+    paths:
+      - tests/results/api_results.txt
+    expire_in: 8 hours
+  when: manual
+
+TestUi:
+  stage: TestUi
+  script:
+    - docker build -t test-cars .
+    - docker run --rm --name test-cars-ui test-cars bash -c "./run_ui_tests.sh"
+  artifacts:
+    paths:
+      - tests/results/ui_results.txt
+    expire_in: 8 hours
+  when: manual
+  needs:
+    - job: TestApi
