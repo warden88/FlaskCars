@@ -28,8 +28,9 @@ TestApi:
   stage: TestApi
   script:
     - docker build -t test-cars .
-    - mkdir -p tests/results  
-    - docker run --rm --name test-cars-api test-cars bash -c "./run_api_tests.sh"
+    - mkdir -p tests/results
+
+    - docker run --rm --name test-cars-api test-cars bash -c "./run_api_tests.sh > tests/results/api_results.txt"
   artifacts:
     paths:
       - tests/results/api_results.txt
@@ -40,8 +41,9 @@ TestUi:
   stage: TestUi
   script:
     - docker build -t test-cars . 
-    - mkdir -p tests/results  
-    - docker run --rm --name test-cars-ui test-cars bash -c "./run_ui_tests.sh"
+    - mkdir -p tests/results
+
+    - docker run --rm --name test-cars-ui test-cars bash -c "./run_ui_tests.sh > tests/results/ui_results.txt"
   artifacts:
     paths:
       - tests/results/ui_results.txt
