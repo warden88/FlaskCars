@@ -28,25 +28,24 @@ TestApi:
   stage: TestApi
   script:
     - docker build -t test-cars .
-    - mkdir -p tests/results
-
-    - docker run --rm --name test-cars-api test-cars bash -c "./run_api_tests.sh > tests/results/api_results.txt"
+    - mkdir -p tests/results  
+    - docker run --rm --name test-cars-api -v $PWD/tests/results:/tests/results test-cars bash -c "./run_api_tests.sh"
   artifacts:
     paths:
-      - tests/results/api_results.txt
+      - tests/results/api_results.txt  
     expire_in: 8 hours
   when: manual
+
 
 TestUi:
   stage: TestUi
   script:
     - docker build -t test-cars . 
-    - mkdir -p tests/results
-
-    - docker run --rm --name test-cars-ui test-cars bash -c "./run_ui_tests.sh > tests/results/ui_results.txt"
+    - mkdir -p tests/results  
+    - docker run --rm --name test-cars-ui -v $PWD/tests/results:/tests/results test-cars bash -c "./run_ui_tests.sh"
   artifacts:
     paths:
-      - tests/results/ui_results.txt
+      - tests/results/ui_results.txt  
     expire_in: 8 hours
   when: manual
   needs:
